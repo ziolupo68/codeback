@@ -6,6 +6,9 @@ RADIUS_CHECKPOINT=600
 RADIUS_POD=400
 MAX_THRUST=100
 
+def log(message):
+    print(message, file=sys.stderr, flush=True)
+    
 class Point:
   def __init__(self,x,y,):
       self.x = x
@@ -36,7 +39,7 @@ class Circuit:
 
   def addCheckpoint(self,checkpoint):
     if any(p==checkpoint for p in self.checkpoints):
-      if checkpoint==self.firstCheckpoint:
+      if checkpoint==self.firstCheckpoint and self.firstCheckpoint!=self.lastCheckpoint:
         self.lap=self.lap+1
     else:
       self.numberOfCheckpoints = self.numberOfCheckpoints+1
