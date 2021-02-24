@@ -43,6 +43,8 @@ class Circuit:
       self.checkpoints.append(checkpoint)
     if not self.firstCheckpoint:
       self.firstCheckpoint=checkpoint
+    if (self.lastCheckpoint!=checkpoint):
+      self.lastCheckpoint=checkpoint
 
 class Pod():
   def __init__(self,name,circuit):
