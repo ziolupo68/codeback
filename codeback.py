@@ -74,6 +74,7 @@ class Pod():
     self.previous_position=Point(0,0)
     self.nextCheckpointAngle=0
     self.nextCheckPointDistance=0
+    self.nextCheckpoint=Point(0,0)
     self.speed_x=0
     self.speed_y=0
     self.speed=0
@@ -90,7 +91,7 @@ class Pod():
   def useBoost(self):
     self.boost +=1
 
-  def tryToBoost(self,nextCheckpoint):
+  def tryToBoost(self):
     if self.isBoostAvailable():
       # PAOLO: insert here the boost logic
       # We boost only if thrust is 100. No sense give penalties to thrust and than boost
@@ -142,21 +143,22 @@ class Pod():
     # time: one turn -> in this way speed=distance
     # Don't know if needed but this calculation could help in future
 
-    self.speed_x=self.previous_position.x=self.position.x
-    self.speed_y=self.previous_position.y=self.position.y
-    self.speed=math.sqrt(self.speed_x*self.speed_x+self.speed_y+self.speed_y)
+    self.speed_x=self.previous_position.x-self.position.x
+    self.speed_y=self.previous_position.y-self.position.y
+    self.speed=math.sqrt(self.speed_x*self.speed_x+self.speed_y*self.speed_y)
 
     #the angle should be equal to the one given by the server
-    self.angle=math.atan(self.speed)
+    self.angle=math.degrees(math.atan(self.speed))
 
-  def makeNextMove(self):
+  def makeNextMove(self,x,y):
+    self.updatePosition(Point(x,y))
     self.circuit.addCheckpoint(self.nextCheckpoint)
     self.approcchingThrust(self.nextCheckpointAngle)
     self.adaptThrustOnDistance(self.nextCheckPointDistance)
     self.speedCalculation()
     newdest=self.newDestination(self.position,self.nextCheckpoint)
-    log(f"angle: {self.nextCheckpointAngle} -SA: {self.angle} - dist: {self.nextCheckPointDistance} - thurst:{self.thrust} - SPEED: {self.speed}- POS: {self.position}")
-    return print(newdest.x,newdest.y, self.tryToBoost(self.nextCheckpoint))
+    log(f"dist: {self.nextCheckPointDistance} - thurst:{self.thrust} - SPEED: {self.speed:.2f}- POS: {self.position} -EXPOS: {self.previous_position}")
+    return print(newdest.x,newdest.y, self.tryToBoost())
 
 
 circuit=Circuit()
@@ -173,7 +175,5 @@ while True:
     # To debug: print("Debug messages...", file=sys.stderr, flush=True)
     myPod.nextCheckpointAngle=next_checkpoint_angle
     myPod.nextCheckPointDistance=next_checkpoint_dist
-    myPod.updatePosition(Point(x,y))
     myPod.nextCheckpoint=Point(next_checkpoint_x,next_checkpoint_y)
-    myPod.makeNextMove()
-
+    myPod.makeNextMove(x,y)
