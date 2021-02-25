@@ -107,13 +107,6 @@ class Pod():
           return " BOOST"
     return " "+str(self.thrust)
 
-  def updatePosition(self, newposition):
-    if newposition==self.position:
-      pass
-    else:
-      self.previous_position=self.position
-      self.position=newposition
-    return
   def approcchingThrust(self,nextCheckpointAngle):
     if nextCheckpointAngle > self.targetAngle or nextCheckpointAngle < -self.targetAngle:
         self.thrust = 10
