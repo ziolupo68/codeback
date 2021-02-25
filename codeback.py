@@ -121,6 +121,19 @@ class Pod():
         self.thrust=int(self.thrust*0.7)
     elif nextCheckpointDist<(RADIUS_CHECKPOINT*4):
         self.thrust=int(self.thrust*0.8)
+        
+  def adaptThrustOnDistance2(self,nextCheckpointDist):
+    # Some ideas:
+    # - correct thrust based on distance and angle
+    # performance erally bad after angle correction
+    e=nextCheckpointDist/(RADIUS_CHECKPOINT*2.5)
+    if e>1:
+        e=1
+    self.thrust=int(e)*self.thrust
+    if not inside(self.nextCheckpointAngle,BOOST_ANGLE):
+        e=(90-(abs(self.nextCheckpointAngle)))/90
+        self.thrust=self.thrust*int(e)        
+        
   def newDestination(self,position,nextCheckpoint):
     # we don't have a way for rotating the pod
     # TRICK: we could invent a fake position:take the line between nextCheckpoint and NextNextCheckpoint
