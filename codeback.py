@@ -8,8 +8,9 @@ import math
 RADIUS_CHECKPOINT=600
 RADIUS_POD=400
 MAX_THRUST=100
-BOOST_ANGLE=20
+BOOST_ANGLE=30
 BOOST_DISTANCE=3000
+PI=3.14
 
 def log(message):
     print(message, file=sys.stderr, flush=True)
@@ -108,32 +109,6 @@ class Pod():
           return " BOOST"
     return " "+str(self.thrust)
 
-  def approcchingThrust(self,nextCheckpointAngle):
-    if nextCheckpointAngle > self.targetAngle or nextCheckpointAngle < -self.targetAngle:
-        self.thrust = 10
-    else:
-        self.thrust = MAX_THRUST
-
-  def adaptThrustOnDistance(self,nextCheckpointDist):
-    if nextCheckpointDist<(RADIUS_CHECKPOINT*1.7):
-        self.thrust=int(self.thrust*0.4)
-    elif nextCheckpointDist<(RADIUS_CHECKPOINT*3):
-        self.thrust=int(self.thrust*0.7)
-    elif nextCheckpointDist<(RADIUS_CHECKPOINT*4):
-        self.thrust=int(self.thrust*0.8)
-        
-  def adaptThrustOnDistance2(self,nextCheckpointDist):
-    # Some ideas:
-    # - correct thrust based on distance and angle
-    # performance erally bad after angle correction
-    e=nextCheckpointDist/(RADIUS_CHECKPOINT*2.5)
-    if e>1:
-        e=1
-    self.thrust=int(e)*self.thrust
-    if not inside(self.nextCheckpointAngle,BOOST_ANGLE):
-        e=(90-(abs(self.nextCheckpointAngle)))/90
-        self.thrust=self.thrust*int(e)        
-        
   def newDestination(self,position,nextCheckpoint):
     # we don't have a way for rotating the pod
     # TRICK: we could invent a fake position:take the line between nextCheckpoint and NextNextCheckpoint
@@ -163,16 +138,63 @@ class Pod():
     #the angle should be equal to the one given by the server
     self.angle=math.degrees(math.atan(self.speed))
 
+  def approcchingThrust(self):
+    max_ang=30
+    if inside(self.nextCheckpointAngle,40):
+        self.thrust = MAX_THRUST
+    elif inside(self.nextCheckpointAngle,50):
+        self.thrust = 80
+    elif inside(self.nextCheckpointAngle,80):
+        self.thrust = 30
+    elif inside(self.nextCheckpointAngle,90):
+        self.thrust = 10
+    else:
+        self.thrust = 0
+
+  def adaptThrustOnDistance(self):
+    if self.nextCheckPointDistance<(RADIUS_CHECKPOINT*1.7):
+        self.thrust=int(self.thrust*0.7)
+    elif self.nextCheckPointDistance<(RADIUS_CHECKPOINT*3):
+        self.thrust=int(self.thrust*0.6)
+    elif self.nextCheckPointDistance<(RADIUS_CHECKPOINT*4):
+        self.thrust=int(self.thrust*0.9)
+
+  def adaptThrustOnDistance2(self):
+    r=1
+    e=self.nextCheckPointDistance/(RADIUS_CHECKPOINT*3)
+    if e>1:
+        e=1
+    t1=int(e*MAX_THRUST)
+    if not inside(self.nextCheckpointAngle,30):
+        r=abs((90-(self.nextCheckpointAngle))/90)
+    self.thrust=int(t1*r)
+    log(f"E: {e} [T:{int(t1)}]R: {r}[{self.thrust}] [NEXT-DITS: {self.nextCheckPointDistance} - nextANGLE: {self.nextCheckpointAngle}]")
+
+  def adaptThrust1(self):
+      self.approcchingThrust()
+      self.adaptThrustOnDistance()
+    
+  def adaptThrust2(self):
+    self.adaptThrustOnDistance2()
+
   def makeNextMove(self,x,y):
     self.updatePosition(Point(x,y))
     self.circuit.addCheckpoint(self.nextCheckpoint)
-    self.approcchingThrust(self.nextCheckpointAngle)
-    self.adaptThrustOnDistance(self.nextCheckPointDistance)
+    self.adaptThrust1()
     self.speedCalculation()
+    self.predictNextMove()
     newdest=self.newDestination(self.position,self.nextCheckpoint)
-    log(f"dist: {self.nextCheckPointDistance} - thurst:{self.thrust} - SPEED: {self.speed:.2f}- POS: {self.position} -EXPOS: {self.previous_position}")
+    log(f"dist: {self.nextCheckPointDistance} - thurst:{self.thrust} - SPEED: {self.speed:.2f}- ang: {self.nextCheckpointAngle}")
     return print(newdest.x,newdest.y, self.tryToBoost())
+    # return print(newdest.x,newdest.y, self.thrust)
 
+  def predictNextMove(self):
+    rad_angle=self.nextCheckpointAngle * PI / 180.0
+    vx=math.cos(rad_angle)*self.thrust
+    vy=math.sin(rad_angle)*self.thrust
+    next_x=int(vx+self.position.x)
+    next_y=int(vy+self.position.y)
+    log(f"NEXT_X: {next_x} - NEXT_y: {next_y} X:{self.position.x} - Y: {self.position.y}")
 
 circuit=Circuit()
 myPod=Pod("Homundus",circuit)
@@ -183,7 +205,7 @@ while True:
     # next_checkpoint_angle: angle between your pod orientation and the direction of the next checkpoint
     x, y, next_checkpoint_x, next_checkpoint_y, next_checkpoint_dist, next_checkpoint_angle = [int(i) for i in input().split()]
     opponent_x, opponent_y = [int(i) for i in input().split()]
-
+    log(f"FROM SYSTEM: x:{x} | y:{y} |  dx:{next_checkpoint_x} | dy:{next_checkpoint_y} | dist:{next_checkpoint_dist} | angle:{next_checkpoint_angle}")
     # Write an action using print
     # To debug: print("Debug messages...", file=sys.stderr, flush=True)
     myPod.nextCheckpointAngle=next_checkpoint_angle
