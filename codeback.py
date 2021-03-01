@@ -31,13 +31,6 @@ class Point:
   def distance2(self, other):
     return  (self.x - other.x)**2 + (self.y- other.y)**2
 
-
-  def is_closer_than(self, distance, other)
-    return self.distance(other) < distance
-
-  def is_further_than(self, distance, other)
-    return self.distance(other) > distance
-
   def angle(self, other):
     return (other.y-self.y)/(other.x-self.x)
 
@@ -50,9 +43,24 @@ class Point:
   def determinant(self,other):
     return self.x*other.y-self.y*other.x
 
-  def inner_angle(v,w):
-    cosx=dot_product(v,w)/(length(v)*length(w))
-    rad=acos(cosx) # in radians
+  def getAngle(self,other):
+    d = self.distance(other)
+    dx = (other.x - this.x) / d
+    dy = (other.y - this.y) / d
+
+    # Simple trigonometry. We multiply by 180.0 / PI to convert radiants to degrees.
+    a = math.acos(dx) * 180.0 / PI
+
+    # If the point I want is below me, I have to shift the angle for it to be correct
+    if (dy < 0):
+        a = 360.0 - a
+
+    return a
+
+
+  def inner_angle(self,other):
+    cosx=self.dot_product(other)/(length(v)*length(w))
+    rad=math.acos(cosx) # in radians
     return rad*180/pi # returns degrees
 
   def __eq__(self, other):
