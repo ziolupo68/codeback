@@ -31,6 +31,38 @@ class Point:
   def distance2(self, other):
     return  (self.x - other.x)**2 + (self.y- other.y)**2
 
+
+  def is_closer_than(self, distance, other)
+    return self.distance(other) < distance
+
+  def is_further_than(self, distance, other)
+    return self.distance(other) > distance
+
+  def angle(self, other):
+    return (other.y-self.y)/(other.x-self.x)
+
+  def angle2(self, other):
+    return math.atan2(self.determinant(other), self.dot_product(other))
+
+  def GetAngle (self, other):
+    x1, y1 = p1
+    x2, y2 = p2
+    dX = x2 = x1
+    dY = y2 - y1
+    rads = math.atan2 (-dY, dX) #wrong for finding angle/declination?
+    return math.degrees (rads)
+
+  def dot_product(self,other):
+    return self.x*other.x+self.y*other.y
+
+  def determinant(self,other):
+    return self.x*other.y-self.y*other.x
+
+  def inner_angle(v,w):
+    cosx=dot_product(v,w)/(length(v)*length(w))
+    rad=acos(cosx) # in radians
+    return rad*180/pi # returns degrees
+
   def __eq__(self, other):
       return ((self.x, self.y) == (other.x, other.y))
 
@@ -184,7 +216,10 @@ class Pod():
     self.speedCalculation()
     self.predictNextMove()
     newdest=self.newDestination(self.position,self.nextCheckpoint)
-    log(f"dist: {self.nextCheckPointDistance} - thurst:{self.thrust} - SPEED: {self.speed:.2f}- ang: {self.nextCheckpointAngle}")
+    my_dist=math.ceil(self.position.distance(self.nextCheckpoint))
+    m=(self.position.angle2(self.nextCheckpoint))
+    alfa= math.degrees(math.atan(m))
+    log(f"d:{my_dist} m:{m} a:{alfa} t:{self.thrust} SPEED: {self.speed:.2f}")
     return print(newdest.x,newdest.y, self.tryToBoost())
     # return print(newdest.x,newdest.y, self.thrust)
 
@@ -194,7 +229,7 @@ class Pod():
     vy=math.sin(rad_angle)*self.thrust
     next_x=int(vx+self.position.x)
     next_y=int(vy+self.position.y)
-    log(f"NEXT_X: {next_x} - NEXT_y: {next_y} X:{self.position.x} - Y: {self.position.y}")
+    # log(f"NEXT_X: {next_x} - NEXT_y: {next_y} X:{self.position.x} - Y: {self.position.y}")
 
 circuit=Circuit()
 myPod=Pod("Homundus",circuit)
@@ -205,7 +240,7 @@ while True:
     # next_checkpoint_angle: angle between your pod orientation and the direction of the next checkpoint
     x, y, next_checkpoint_x, next_checkpoint_y, next_checkpoint_dist, next_checkpoint_angle = [int(i) for i in input().split()]
     opponent_x, opponent_y = [int(i) for i in input().split()]
-    log(f"FROM SYSTEM: x:{x} | y:{y} |  dx:{next_checkpoint_x} | dy:{next_checkpoint_y} | dist:{next_checkpoint_dist} | angle:{next_checkpoint_angle}")
+    log(f"P({x},y:{y}) CP:({next_checkpoint_x},{next_checkpoint_y}) d:{next_checkpoint_dist} a:{next_checkpoint_angle}")
     # Write an action using print
     # To debug: print("Debug messages...", file=sys.stderr, flush=True)
     myPod.nextCheckpointAngle=next_checkpoint_angle
