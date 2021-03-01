@@ -44,14 +44,6 @@ class Point:
   def angle2(self, other):
     return math.atan2(self.determinant(other), self.dot_product(other))
 
-  def GetAngle (self, other):
-    x1, y1 = p1
-    x2, y2 = p2
-    dX = x2 = x1
-    dY = y2 - y1
-    rads = math.atan2 (-dY, dX) #wrong for finding angle/declination?
-    return math.degrees (rads)
-
   def dot_product(self,other):
     return self.x*other.x+self.y*other.y
 
